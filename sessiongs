@@ -1,0 +1,14 @@
+function setSession(data) {
+  const cache = CacheService.getUserCache();
+  cache.put('session', JSON.stringify(data), 21600); // 6 jam
+}
+
+function getSessionData() {
+  const cache = CacheService.getUserCache();
+  const raw = cache.get('session');
+  return raw ? JSON.parse(raw) : null;
+}
+
+function clearSession() {
+  CacheService.getUserCache().remove('session');
+}
