@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <?!= include('component_css'); ?>
+  <style>
+    .is-invalid{border-color:#dc3545}
+    .invalid-feedback{display:block;font-size:.85rem}
+    .tab-btn{background:none;border:none;padding:8px;cursor:pointer}
+    .tab-active{border-bottom:2px solid #0d6efd;font-weight:bold;color:#0d6efd}
+    .tab-inactive{color:#6c757d}
+  </style>
+</head>
+
+<body class="d-flex justify-content-center align-items-center vh-100 bg-light">
+
+<div class="card p-4 shadow-sm" style="width:360px">
+  <h3 class="text-center mb-1">Nashua</h3>
+  <p class="text-center text-muted mb-3">PT. Nashua Nusantara</p>
+
+  <div class="d-flex mb-3 border-bottom">
+    <button id="tabLogin" class="tab-btn tab-active flex-fill">Login</button>
+    <button id="tabDaftar" class="tab-btn tab-inactive flex-fill">Daftar</button>
+  </div>
+
+  <div id="formLogin">
+    <input id="email" class="form-control mb-1" placeholder="Email">
+    <div id="emailErr" class="invalid-feedback"></div>
+
+    <input id="password" type="password" class="form-control mb-1" placeholder="Password">
+    <div id="passErr" class="invalid-feedback mb-2"></div>
+
+    <button id="btnLogin" class="btn btn-primary w-100">Login</button>
+  </div>
+
+  <div id="formDaftar" style="display:none">
+    <input id="kode" class="form-control mb-1" placeholder="Kode Registrasi">
+    <div id="kodeErr" class="invalid-feedback"></div>
+    <small class="text-muted d-block mb-2">
+      *Kode diperoleh dari Admin
+    </small>
+
+    <input id="nik" class="form-control mb-1" placeholder="NIK">
+    <div id="nikErr" class="invalid-feedback"></div>
+
+    <input id="nama" class="form-control mb-1" placeholder="Nama">
+    <div id="namaErr" class="invalid-feedback"></div>
+
+    <input id="jabatan" class="form-control mb-1" placeholder="Jabatan">
+    <div id="jabatanErr" class="invalid-feedback"></div>
+
+    <input id="emailDaftar" class="form-control mb-1" placeholder="Email">
+    <div id="emailDaftarErr" class="invalid-feedback"></div>
+
+    <input id="pass1" type="password" class="form-control mb-1" placeholder="Password">
+    <input id="pass2" type="password" class="form-control mb-2" placeholder="Konfirmasi Password">
+    <div id="pass2Err" class="invalid-feedback"></div>
+
+    <button id="btnDaftar" class="btn btn-success w-100">Daftar</button>
+  </div>
+</div>
+
+<!-- MODAL SUCCESS -->
+<div class="modal fade" id="successModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Pendaftaran Berhasil</h5>
+      </div>
+      <div class="modal-body text-center">
+        <p>Akun berhasil dibuat.</p>
+        <small>Silakan login</small>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button class="btn btn-success" id="btnModalLogin">Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?!= include('component_js'); ?>
+
+<script>
+$(function(){
+  const gmail=/^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+  const MIN=6;
+
+  function resetErr(){
+    $('.form-control').removeClass('is-invalid');
+    $('.invalid-feedback').text('');
+  }
+
+  $('#tabLogin').click(()=>{
+    resetErr();
+    $('#formLogin').show(); $('#formDaftar').hide();
+    $('#tabLogin').addClass('tab-active');
+    $('#tabDaftar').removeClass('tab-active');
+  });
+
+  $('#tabDaftar').click(()=>{
+    resetErr();
+    $('#formLogin').hide(); $('#formDaftar').show();
+    $('#tabDaftar').addClass('tab-active');
+    $('#tabLogin').removeClass('tab-active');
+  });
+
+  // ===== LOGIN =====
+  $('#btnLogin').click(()=>{
+  resetErr();
+  const email=$('#email').val().trim();
+  const pass=$('#password').val();
+
+  if(!gmail.test(email)){
+    $('#email').addClass('is-invalid');
+    $('#emailErr').text('Email tidak valid');
+    return;
+  }
+  if(pass.length<MIN){
+    $('#password').addClass('is-invalid');
+    $('#passErr').text('Min 6 karakter');
+    return;
+  }
+
+  $('#btnLogin').prop('disabled',true).text('Memproses...');
+  google.script.run.withSuccessHandler(res=>{
+    $('#btnLogin').prop('disabled',false).text('Login');
+
+    if(res.status==='success'){
+      google.script.run.withSuccessHandler(url=>{
+        window.top.location.href = url + '?page=view_dashboard';
+      }).getAppUrl();
+    }else{
+      $('#password').addClass('is-invalid');
+      $('#passErr').text('Email atau password salah');
+    }
+
+  }).login(email,pass);
+});
+
+  // ===== DAFTAR =====
+  $('#btnDaftar').click(()=>{
+    resetErr();
+    const data={
+      kode:$('#kode').val().trim(),
+      nik:$('#nik').val().trim(),
+      nama:$('#nama').val().trim(),
+      jabatan:$('#jabatan').val().trim(),
+      email:$('#emailDaftar').val().trim(),
+      password:$('#pass1').val()
+    };
+
+    if(!data.kode) return $('#kode').addClass('is-invalid');
+    if(!data.nik) return $('#nik').addClass('is-invalid');
+    if(!data.nama) return $('#nama').addClass('is-invalid');
+    if(!data.jabatan) return $('#jabatan').addClass('is-invalid');
+    if(!gmail.test(data.email)) return $('#emailDaftar').addClass('is-invalid');
+    if(data.password.length<MIN) return $('#pass1').addClass('is-invalid');
+    if(data.password!==$('#pass2').val()) return $('#pass2').addClass('is-invalid');
+
+    $('#btnDaftar').prop('disabled',true).text('Memproses...');
+    google.script.run.withSuccessHandler(res=>{
+      $('#btnDaftar').prop('disabled',false).text('Daftar');
+
+      if(res.status==='success'){
+        $('#successModal').modal('show');
+      }
+      if(res.status==='invalid_code'){
+        $('#kode').addClass('is-invalid');
+        $('#kodeErr').text('Kode tidak valid');
+      }
+      if(res.status==='duplicate'){
+        if(res.emailExist){$('#emailDaftar').addClass('is-invalid');$('#emailDaftarErr').text('Email sudah terdaftar');}
+        if(res.nikExist){$('#nik').addClass('is-invalid');$('#nikErr').text('NIK sudah terdaftar');}
+      }
+    }).daftarUser(data);
+  });
+
+  $('#btnModalLogin').click(()=>{
+    $('#successModal').modal('hide');
+    $('#tabLogin').click();
+  });
+
+});
+</script>
+</body>
+</html>
