@@ -1,0 +1,40 @@
+function doGet(e) {
+  e = e || {};
+  e.parameter = e.parameter || {};
+
+  const page = e.parameter.page || 'view_login';
+
+  return renderPage(page)
+    .setTitle('E-Absensi PT. Nashua Nusantara')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function renderPage(page) {
+  const session = requireLogin();
+
+  // ✅ SUDAH LOGIN tapi buka login → langsung dashboard
+  if (session && page === 'view_login') {
+    return HtmlService.createTemplateFromFile('view_dashboard').evaluate();
+  }
+
+  // ❌ BELUM LOGIN tapi buka halaman lain → paksa login
+  if (!session && page !== 'view_login') {
+    return HtmlService.createTemplateFromFile('view_login').evaluate();
+  }
+
+  // ✅ KONDISI NORMAL
+  return HtmlService.createTemplateFromFile(page).evaluate();
+}
+
+function requireLogin() {
+  const session = getSessionData();
+  return session && session.nik ? session : null;
+}
+
+function getAppUrl() {
+  return ScriptApp.getService().getUrl();
+}
+
+function include(file) {
+  return HtmlService.createHtmlOutputFromFile(file).getContent();
+}
