@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <?!= include('component_css'); ?>
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-light bg-white shadow-sm">
+  <div class="container d-flex justify-content-between">
+    <span class="navbar-brand fw-bold">Nashua</span>
+    <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+      Logout
+    </button>
+  </div>
+</nav>
+
+<div class="container mt-5 text-center">
+  <h1 class="fw-bold">DASHBOARD TERPANGGIL</h1>
+  <p class="text-muted">Login berhasil & session aktif</p>
+</div>
+
+<?!= include('component_js'); ?>
+
+</body>
+</html>
