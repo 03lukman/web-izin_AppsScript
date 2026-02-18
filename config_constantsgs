@@ -1,0 +1,4 @@
+const SHEETS = {
+  KARYAWAN: 'Data_Karyawan',
+  KODE: 'Kode_Akses'
+};
